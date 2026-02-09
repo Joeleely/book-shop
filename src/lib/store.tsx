@@ -107,54 +107,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const startCheckoutFromSelected: AppState["startCheckoutFromSelected"] = () => {
-  if (!user) return { ok: false, message: "Please login first." };
+    if (!user) return { ok: false, message: "Please login first." };
 
-  const selected = cart.filter((i) => i.selected);
-  if (selected.length === 0) return { ok: false, message: "Please select at least one item." };
+    const selected = cart.filter((i) => i.selected);
+    if (selected.length === 0) return { ok: false, message: "Please select at least one item." };
 
-  for (const item of selected) {
-    const book = books.find((b) => b.id === item.bookId);
-    if (!book) return { ok: false, message: "Book not found." };
-    if (book.stock <= 0) return { ok: false, message: `"${book.title}" is out of stock.` };
-  }
+    for (const item of selected) {
+      const book = books.find((b) => b.id === item.bookId);
+      if (!book) return { ok: false, message: "Book not found." };
+      if (book.stock <= 0) return { ok: false, message: `"${book.title}" is out of stock.` };
+    }
 
-  setCheckout({
-    items: selected.map((i) => ({ bookId: i.bookId, quantity: i.quantity })),
-    shippingAddress: "",
-  });
+    setCheckout({
+      items: selected.map((i) => ({ bookId: i.bookId, quantity: i.quantity })),
+      shippingAddress: "",
+    });
 
-  return { ok: true };
-};
+    return { ok: true };
+  };
 
-const updateCheckoutAddress: AppState["updateCheckoutAddress"] = (shippingAddress) => {
-  if (!shippingAddress.trim()) return { ok: false, message: "Please enter shipping address." };
-  if (!checkout) return { ok: false, message: "No checkout session." };
-  setCheckout({ ...checkout, shippingAddress });
-  return { ok: true };
-};
+  const updateCheckoutAddress: AppState["updateCheckoutAddress"] = (shippingAddress) => {
+    if (!shippingAddress.trim()) return { ok: false, message: "Please enter shipping address." };
+    if (!checkout) return { ok: false, message: "No checkout session." };
+    setCheckout({ ...checkout, shippingAddress });
+    return { ok: true };
+  };
 
-const clearCheckout = () => setCheckout(null);
+  const clearCheckout = () => setCheckout(null);
 
-const finalizeCheckout: AppState["finalizeCheckout"] = (method, payload) => {
-  if (!user) return { ok: false, message: "Please login first." };
-  if (!checkout) return { ok: false, message: "No checkout session." };
-  if (checkout.items.length === 0) return { ok: false, message: "No items in checkout." };
-  if (!checkout.shippingAddress.trim()) return { ok: false, message: "Shipping address is required." };
+  const finalizeCheckout: AppState["finalizeCheckout"] = (method, payload) => {
+    if (!user) return { ok: false, message: "Please login first." };
+    if (!checkout) return { ok: false, message: "No checkout session." };
+    if (checkout.items.length === 0) return { ok: false, message: "No items in checkout." };
+    if (!checkout.shippingAddress.trim()) return { ok: false, message: "Shipping address is required." };
 
-  const orderId = "ORD-" + uid().toUpperCase();
-  const total = calcTotal(checkout.items);
+    const orderId = "ORD-" + uid().toUpperCase();
+    const total = calcTotal(checkout.items);
 
-  const order: Order = {
-    id: orderId,
-    createdAt: new Date().toISOString(),
-    status: method === "COD" ? "CONFIRMED" : "PAID",
-    items: checkout.items,
-    shippingAddress: checkout.shippingAddress,
-    total,
-    payment:
-      method === "COD"
-        ? { method, amount: total, status: "PENDING" }
-        : {
+    const order: Order = {
+      id: orderId,
+      createdAt: new Date().toISOString(),
+      status: method === "COD" ? "CONFIRMED" : "PAID",
+      items: checkout.items,
+      shippingAddress: checkout.shippingAddress,
+      total,
+      payment:
+        method === "COD"
+          ? { method, amount: total, status: "PENDING" }
+          : {
             method,
             amount: total,
             status: "PAID",
@@ -162,15 +162,15 @@ const finalizeCheckout: AppState["finalizeCheckout"] = (method, payload) => {
             last4: method === "CARD" ? payload?.cardLast4 ?? "4242" : undefined,
             promptPayQrUrl: method === "PROMPTPAY" ? "https://picsum.photos/seed/promptpay-qr/420/420" : undefined,
           },
+    };
+    setOrders((prev) => [order, ...prev]);
+
+    const purchasedIds = new Set(checkout.items.map((x) => x.bookId));
+    setCart((prev) => prev.filter((i) => !purchasedIds.has(i.bookId)));
+
+    setCheckout(null);
+    return { ok: true, orderId };
   };
-  setOrders((prev) => [order, ...prev]);
-
-  const purchasedIds = new Set(checkout.items.map((x) => x.bookId));
-  setCart((prev) => prev.filter((i) => !purchasedIds.has(i.bookId)));
-
-  setCheckout(null);
-  return { ok: true, orderId };
-};
 
   const setQty = (bookId: string, quantity: number) => {
     const q = Math.max(1, Math.min(99, quantity));

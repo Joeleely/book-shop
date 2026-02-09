@@ -10,8 +10,6 @@ import { Banner } from "../components/Banner";
 import { BestSellerBook } from "../components/BestSellerBook";
 import { BookCard } from "../components/BookCard";
 
-const format = (n: number) => n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
 export default function HomePage() {
   const sp = useSearchParams();
   const q = (sp.get("q") ?? "").trim().toLowerCase();

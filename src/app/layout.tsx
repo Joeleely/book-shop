@@ -8,7 +8,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <AppProvider>
-            <div className="min-h-screen flex flex-col">
+            <div className="min-h-screen">
               <Navbar />
               <main className="flex-1">{children}</main>
               <Contact />
