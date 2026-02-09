@@ -49,7 +49,9 @@ export function Banner({
               b={b}
               role={role}
               onClick={role === "left" ? prev : role === "right" ? next : undefined}
-              onNavigate={(href) => router.push(href)}
+              onNavigate={(href) => {
+                window.open(href, "_blank",);
+              }}
             />
           );
         })}
